@@ -4,6 +4,12 @@ import { useGameSocket } from './hooks/useGameSocket';
 import { Shield, Users, Radio, MessageSquare, History, Trophy } from 'lucide-react';
 
 function App() {
+  const pieceNames = { p: 'Pawn', n: 'Knight', b: 'Bishop', r: 'Rook', q: 'Queen', k: 'King' };
+  const pieceSymbols = {
+    w: { p: '♙', n: '♘', b: '♗', r: '♖', q: '♕', k: '♔' },
+    b: { p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚' }
+  };
+
   const [gameId, setGameId] = useState('');
   const [joined, setJoined] = useState(false);
   const [lastMove, setLastMove] = useState(null);
@@ -151,18 +157,37 @@ function App() {
               {history.length === 0 ? (
                  <div className="feature-card-placeholder">Log currently empty</div>
               ) : (
-                <div className="history-grid">
-                  {history.map((m, i) => {
-                     // group by pairs (white, black)
-                     if (i % 2 !== 0) return null;
-                     return (
-                       <div key={i} className="history-row">
-                          <span className="history-number">{Math.floor(i/2) + 1}.</span>
-                          <span className="history-move">{m.san}</span>
-                          <span className="history-move">{history[i+1]?.san || ''}</span>
-                       </div>
-                     );
-                  })}
+                <div className="history-timeline">
+                  {history.map((m, i) => (
+                    <div key={i} className={`history-timeline-item ${m.color === 'w' ? 'white-move' : 'black-move'}`}>
+                      <div className="timeline-number">{Math.floor(i/2) + 1}</div>
+                      
+                      <div className="timeline-content">
+                         <div className="timeline-header">
+                            <span className="timeline-icon">{pieceSymbols[m.color][m.piece]}</span>
+                            <span className="timeline-text">
+                              {m.color === 'w' ? 'White' : 'Black'} {pieceNames[m.piece]}
+                            </span>
+                         </div>
+                         <div className="timeline-squares">
+                            <span className="square-badge">{m.from}</span>
+                            <span className="arrow">➔</span>
+                            <span className="square-badge">{m.to}</span>
+                         </div>
+                      </div>
+
+                      <div className="timeline-badges">
+                         {m.captured && <span className="badge capture">Takes {pieceNames[m.captured]}</span>}
+                         {m.san.includes('+') && <span className="badge check">Check</span>}
+                         {m.san.includes('#') && <span className="badge mate">Mate</span>}
+                         {m.san === 'O-O' && <span className="badge action">Kingside Castle</span>}
+                         {m.san === 'O-O-O' && <span className="badge action">Queenside Castle</span>}
+                         {m.promotion && <span className="badge action">Promotes to {pieceNames[m.promotion]}</span>}
+                      </div>
+
+                      <div className="timeline-san">{m.san}</div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
