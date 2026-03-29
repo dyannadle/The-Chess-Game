@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ChessBoard from './components/ChessBoard';
+import Auth from './components/Auth';
 import { useGameSocket } from './hooks/useGameSocket';
-import { Shield, Users, Radio, MessageSquare, History, Trophy } from 'lucide-react';
+import { Shield, Users, Radio, MessageSquare, History, Trophy, Cpu, User as UserIcon, LogOut } from 'lucide-react';
 
 function App() {
   const pieceNames = { p: 'Pawn', n: 'Knight', b: 'Bishop', r: 'Rook', q: 'Queen', k: 'King' };
@@ -10,6 +11,7 @@ function App() {
     b: { p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚' }
   };
 
+  const [user, setUser] = useState(null);
   const [gameId, setGameId] = useState('');
   const [joined, setJoined] = useState(false);
   const [lastMove, setLastMove] = useState(null);
@@ -18,30 +20,69 @@ function App() {
   const [chats, setChats] = useState([]);
   const [history, setHistory] = useState([]);
 
+  // Game Setup State
+  const [showSetup, setShowSetup] = useState(false);
+  const [gameMode, setGameMode] = useState('multiplayer'); // 'multiplayer' or 'ai'
+  const [difficulty, setDifficulty] = useState('medium');
+  const [playerColor, setPlayerColor] = useState('white');
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('chess_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
   const { connected, sendMove, sendChat } = useGameSocket(
       joined ? gameId : null, 
       (move) => setLastMove(move),
       (chat) => setChats(prev => [...prev, chat])
   );
 
-  const handleJoinGame = (e) => {
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('chess_user');
+    setUser(null);
+    setJoined(false);
+  };
+
+  const handleStartGameSetup = (e) => {
     e.preventDefault();
     if (gameId.trim()) {
-      setJoined(true);
+      setShowSetup(true);
     }
   };
 
+  const confirmStartGame = () => {
+    let finalColor = playerColor;
+    if (playerColor === 'random') {
+      finalColor = Math.random() > 0.5 ? 'white' : 'black';
+    }
+    setPlayerColor(finalColor);
+    setShowSetup(false);
+    setJoined(true);
+  };
+
   const onMoveMade = (moveData) => {
-    sendMove(moveData);
+    if (gameMode === 'multiplayer') {
+      sendMove(moveData);
+    }
   };
   
   const handleSendChat = (e) => {
       e.preventDefault();
       if (chatInput.trim()) {
-          sendChat({ sender: 'Player', text: chatInput });
+          sendChat({ sender: user.username, text: chatInput });
           setChatInput('');
       }
   };
+
+  if (!user) {
+    return <Auth onLogin={handleLogin} />;
+  }
 
   if (!joined) {
     return (
@@ -50,6 +91,16 @@ function App() {
             <Trophy className="title-icon" />
             <h1 className="main-title gradient-text">GrandMaster</h1>
         </div>
+
+        {/* User Info Header */}
+        <div className="glass" style={{ marginBottom: '2rem', padding: '1rem 2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+           <UserIcon size={20} className="gradient-text" />
+           <span style={{ fontWeight: 700 }}>{user.username}</span>
+           <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>Wins: {user.wins}</span>
+           <button onClick={handleLogout} className="auth-switch-btn" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <LogOut size={16} /> Logout
+           </button>
+        </div>
         
         <div className="glass join-card">
           <div className="join-card-header">
@@ -57,7 +108,7 @@ function App() {
              <p className="join-card-subtitle">Enter a room ID to challenge your opponent</p>
           </div>
 
-          <form onSubmit={handleJoinGame} className="join-form">
+          <form onSubmit={handleStartGameSetup} className="join-form">
             <div className="input-group">
               <label className="input-label">Room ID</label>
               <input
@@ -73,16 +124,67 @@ function App() {
               type="submit"
               className="submit-btn"
             >
-              Start Game
+              Configure Game
             </button>
           </form>
 
           <div className="features-list">
-            <div className="feature-item"><Users width={16} height={16} /> 2 Players</div>
-            <div className="feature-item"><Radio width={16} height={16} /> Real-time</div>
-            <div className="feature-item"><Shield width={16} height={16} /> Secure</div>
+            <div className="feature-item"><Users width={16} height={16} /> Online</div>
+            <div className="feature-item"><Cpu width={16} height={16} /> AI Bot</div>
+            <div className="feature-item"><Trophy width={16} height={16} /> Ranked</div>
           </div>
         </div>
+
+        {showSetup && (
+          <div className="setup-modal-overlay">
+             <div className="glass setup-card">
+                <div className="auth-header">
+                   <h2 className="auth-title">Game Setup</h2>
+                   <p className="join-card-subtitle">Customize your match before entering</p>
+                </div>
+
+                <div className="setup-section">
+                   <label className="setup-label">Game Mode</label>
+                   <div className="option-grid">
+                      <button 
+                        className={`option-btn ${gameMode === 'multiplayer' ? 'active' : ''}`}
+                        onClick={() => setGameMode('multiplayer')}
+                      >
+                         <Users size={20} /> Multiplayer
+                      </button>
+                      <button 
+                         className={`option-btn ${gameMode === 'ai' ? 'active' : ''}`}
+                         onClick={() => setGameMode('ai')}
+                      >
+                         <Cpu size={20} /> VS Engine
+                      </button>
+                   </div>
+                </div>
+
+                {gameMode === 'ai' && (
+                  <div className="setup-section">
+                    <label className="setup-label">Difficulty</label>
+                    <div className="option-grid">
+                        <button className={`option-btn ${difficulty === 'easy' ? 'active' : ''}`} onClick={() => setDifficulty('easy')}>Easy</button>
+                        <button className={`option-btn ${difficulty === 'medium' ? 'active' : ''}`} onClick={() => setDifficulty('medium')}>Medium</button>
+                        <button className={`option-btn ${difficulty === 'hard' ? 'active' : ''}`} onClick={() => setDifficulty('hard')}>Hard</button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="setup-section">
+                   <label className="setup-label">Your Color</label>
+                   <div className="option-grid">
+                      <button className={`option-btn ${playerColor === 'white' ? 'active' : ''}`} onClick={() => setPlayerColor('white')}>White</button>
+                      <button className={`option-btn ${playerColor === 'black' ? 'active' : ''}`} onClick={() => setPlayerColor('black')}>Black</button>
+                      <button className={`option-btn ${playerColor === 'random' ? 'active' : ''}`} onClick={() => setPlayerColor('random')}>Random</button>
+                   </div>
+                </div>
+
+                <button className="submit-btn" onClick={confirmStartGame}>Enter Room</button>
+             </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -100,7 +202,15 @@ function App() {
 
       {/* Main Board Section */}
       <div className="main-board-section">
-        <ChessBoard gameId={gameId} onMoveMade={onMoveMade} lastMove={lastMove} onHistoryUpdate={setHistory} />
+        <ChessBoard 
+          gameId={gameId} 
+          onMoveMade={onMoveMade} 
+          lastMove={lastMove} 
+          onHistoryUpdate={setHistory}
+          gameMode={gameMode}
+          difficulty={difficulty}
+          playerColor={playerColor}
+        />
       </div>
 
       {/* Sidebar Info */}
