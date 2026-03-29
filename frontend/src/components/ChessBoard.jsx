@@ -14,19 +14,28 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
     }
   }, [game, onHistoryUpdate]);
 
+  function safeGameMutate(modify) {
+    setGame((g) => {
+      const update = new Chess();
+      update.loadPgn(g.pgn());
+      modify(update);
+      return update;
+    });
+  }
+
   useEffect(() => {
     if (lastMove && lastMove.gameId === gameId) {
-      const gameCopy = new Chess(game.fen());
-      try {
-        gameCopy.move({
-          from: lastMove.from,
-          to: lastMove.to,
-          promotion: lastMove.promotion || 'q',
-        });
-        setGame(gameCopy);
-      } catch (e) {
-        console.error('Invalid move received', e);
-      }
+      safeGameMutate((game) => {
+        try {
+          game.move({
+            from: lastMove.from,
+            to: lastMove.to,
+            promotion: lastMove.promotion || 'q',
+          });
+        } catch (e) {
+          console.error('Invalid move received', e);
+        }
+      });
     }
   }, [lastMove, gameId]);
 
@@ -41,35 +50,34 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
   }, [game, gameMode, playerColor]);
 
   function makeAiMove() {
-    const gameCopy = new Chess(game.fen());
-    const moves = gameCopy.moves();
-    if (gameCopy.isGameOver() || moves.length === 0) return;
+      const moves = game.moves();
+      if (game.isGameOver() || moves.length === 0) return;
 
-    let move;
-    if (difficulty === 'easy') {
-      move = moves[Math.floor(Math.random() * moves.length)];
-    } else {
-      // Basic Minimax would go here - for now, using a slightly smarter random for "medium/hard"
-      // In a real production app, we would use Stockfish.js
-      move = moves[Math.floor(Math.random() * moves.length)]; 
-      // Favor captures
-      const captures = moves.filter(m => m.includes('x'));
-      if (captures.length > 0 && Math.random() > 0.3) {
-        move = captures[Math.floor(Math.random() * captures.length)];
+      let move;
+      if (difficulty === 'easy') {
+        move = moves[Math.floor(Math.random() * moves.length)];
+      } else {
+        move = moves[Math.floor(Math.random() * moves.length)]; 
+        const captures = moves.filter(m => m.includes('x'));
+        if (captures.length > 0 && Math.random() > 0.3) {
+          move = captures[Math.floor(Math.random() * captures.length)];
+        }
       }
-    }
 
-    const moveResult = gameCopy.move(move);
-    setGame(gameCopy);
-    onMoveMade({
-      from: moveResult.from,
-      to: moveResult.to,
-      fen: gameCopy.fen(),
-      san: moveResult.san,
-      piece: moveResult.piece,
-      color: moveResult.color,
-      captured: moveResult.captured
-    });
+      const gameCopy = new Chess();
+      gameCopy.loadPgn(game.pgn());
+      const moveResult = gameCopy.move(move);
+      
+      setGame(gameCopy);
+      onMoveMade({
+        from: moveResult.from,
+        to: moveResult.to,
+        fen: gameCopy.fen(),
+        san: moveResult.san,
+        piece: moveResult.piece,
+        color: moveResult.color,
+        captured: moveResult.captured
+      });
   }
 
   function getMoveOptions(square) {
@@ -108,12 +116,13 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
     }
 
     // attempt to make move
-    const gameCopy = new Chess(game.fen());
+    const gameCopy = new Chess();
+    gameCopy.loadPgn(game.pgn());
     try {
       const move = gameCopy.move({
         from: moveFrom,
         to: square,
-        promotion: 'q', // always promote to queen for simplicity
+        promotion: 'q',
       });
 
       if (move === null) {
@@ -145,7 +154,8 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
   }
 
   function onDrop(sourceSquare, targetSquare) {
-    const gameCopy = new Chess(game.fen());
+    const gameCopy = new Chess();
+    gameCopy.loadPgn(game.pgn());
     try {
       const move = gameCopy.move({
         from: sourceSquare,
@@ -171,6 +181,7 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
       return false;
     }
   }
+
 
   return (
     <div className="chessboard-container">
