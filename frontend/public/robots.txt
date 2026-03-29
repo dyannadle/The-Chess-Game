@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://grandmaster-chess.vercel.app/sitemap.xml
