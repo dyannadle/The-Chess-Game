@@ -60,19 +60,19 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove }) => {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 w-full max-w-2xl mx-auto p-4 md:p-8 glass shadow-2xl">
-      <div className="w-full flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${game.turn() === 'w' ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`} />
-            <span className="text-sm font-medium text-gray-400">White's Turn</span>
+    <div className="chessboard-container">
+      <div className="turn-indicator-wrapper">
+        <div className="turn-indicator">
+            <div className={`turn-marker ${game.turn() === 'w' ? 'active' : ''}`} />
+            <span className="turn-text">White's Turn</span>
         </div>
-        <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-400">Black's Turn</span>
-            <div className={`w-3 h-3 rounded-full ${game.turn() === 'b' ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`} />
+        <div className="turn-indicator">
+            <span className="turn-text">Black's Turn</span>
+            <div className={`turn-marker ${game.turn() === 'b' ? 'active' : ''}`} />
         </div>
       </div>
 
-      <div className="w-full aspect-square relative rounded-lg overflow-hidden border-4 border-gray-800 shadow-inner bg-slate-900">
+      <div className="board-wrapper">
         <Chessboard 
           id="MainBoard"
           position={game.fen()} 
@@ -84,13 +84,13 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove }) => {
         />
       </div>
 
-      <div className="w-full mt-4 flex flex-col gap-3">
+      <div className="status-messages">
         {game.isGameOver() && (
-          <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-3 text-yellow-500">
-            <Trophy className="w-6 h-6" />
-            <div className="flex-1">
-              <p className="font-bold">Game Over!</p>
-              <p className="text-sm">
+          <div className="status-alert game-over">
+            <Trophy className="status-alert-icon" />
+            <div className="status-alert-content">
+              <p className="status-alert-title">Game Over!</p>
+              <p className="status-alert-text">
                 {game.isCheckmate() ? 'Checkmate!' : 
                  game.isDraw() ? 'Draw!' : 
                  game.isStalemate() ? 'Stalemate!' : 'Game ended.'}
@@ -98,18 +98,18 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove }) => {
             </div>
             <button 
                 onClick={() => setGame(new Chess())}
-                className="p-2 hover:bg-yellow-500/20 rounded-full transition-colors"
+                className="restart-btn"
                 title="Restart"
             >
-                <RefreshCw className="w-5 h-5" />
+                <RefreshCw width={20} height={20} />
             </button>
           </div>
         )}
         
         {game.inCheck() && !game.isGameOver() && (
-           <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3 text-red-500">
-             <AlertCircle className="w-5 h-5" />
-             <p className="font-semibold">Check!</p>
+           <div className="status-alert check">
+             <AlertCircle className="status-alert-icon" />
+             <p className="status-alert-title">Check!</p>
            </div>
         )}
       </div>
