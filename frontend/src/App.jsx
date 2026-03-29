@@ -7,10 +7,16 @@ function App() {
   const [gameId, setGameId] = useState('');
   const [joined, setJoined] = useState(false);
   const [lastMove, setLastMove] = useState(null);
+  
+  const [chatInput, setChatInput] = useState('');
+  const [chats, setChats] = useState([]);
+  const [history, setHistory] = useState([]);
 
-  const { connected, sendMove } = useGameSocket(joined ? gameId : null, (move) => {
-    setLastMove(move);
-  });
+  const { connected, sendMove, sendChat } = useGameSocket(
+      joined ? gameId : null, 
+      (move) => setLastMove(move),
+      (chat) => setChats(prev => [...prev, chat])
+  );
 
   const handleJoinGame = (e) => {
     e.preventDefault();
@@ -21,6 +27,14 @@ function App() {
 
   const onMoveMade = (moveData) => {
     sendMove(moveData);
+  };
+  
+  const handleSendChat = (e) => {
+      e.preventDefault();
+      if (chatInput.trim()) {
+          sendChat({ sender: 'Player', text: chatInput });
+          setChatInput('');
+      }
   };
 
   if (!joined) {
@@ -80,7 +94,7 @@ function App() {
 
       {/* Main Board Section */}
       <div className="main-board-section">
-        <ChessBoard gameId={gameId} onMoveMade={onMoveMade} lastMove={lastMove} />
+        <ChessBoard gameId={gameId} onMoveMade={onMoveMade} lastMove={lastMove} onHistoryUpdate={setHistory} />
       </div>
 
       {/* Sidebar Info */}
@@ -97,24 +111,60 @@ function App() {
             </div>
         </div>
 
-        {/* Feature Cards Placeholder for "Real App" feel */}
-        <div className="glass feature-card">
+        {/* Live Chat */}
+        <div className="glass feature-card chat-area">
             <div className="feature-card-header chat">
                 <MessageSquare className="icon" />
                 <span className="feature-card-title">Live Chat</span>
             </div>
-            <div className="feature-card-placeholder">
-                Chat coming soon...
+            <div className="chat-messages">
+                {chats.length === 0 ? (
+                    <div className="feature-card-placeholder">No messages yet. Say hi!</div>
+                ) : (
+                    chats.map((c, i) => (
+                        <div key={i} className="chat-message">
+                            <strong>{c.sender}:</strong> <span>{c.text}</span>
+                        </div>
+                    ))
+                )}
             </div>
+            <form onSubmit={handleSendChat} className="chat-input-form">
+               <input 
+                  type="text" 
+                  value={chatInput} 
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Type a message..."
+                  className="chat-input"
+                  required
+               />
+               <button type="submit" className="chat-submit-btn">Send</button>
+            </form>
         </div>
 
-        <div className="glass feature-card">
+        {/* Move History */}
+        <div className="glass feature-card history-area">
             <div className="feature-card-header history">
                 <History className="icon" />
                 <span className="feature-card-title">Move History</span>
             </div>
-            <div className="feature-card-placeholder">
-                Log currently empty
+            <div className="history-list">
+              {history.length === 0 ? (
+                 <div className="feature-card-placeholder">Log currently empty</div>
+              ) : (
+                <div className="history-grid">
+                  {history.map((m, i) => {
+                     // group by pairs (white, black)
+                     if (i % 2 !== 0) return null;
+                     return (
+                       <div key={i} className="history-row">
+                          <span className="history-number">{Math.floor(i/2) + 1}.</span>
+                          <span className="history-move">{m.san}</span>
+                          <span className="history-move">{history[i+1]?.san || ''}</span>
+                       </div>
+                     );
+                  })}
+                </div>
+              )}
             </div>
         </div>
       </aside>

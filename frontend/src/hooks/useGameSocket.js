@@ -4,7 +4,7 @@ import SockJS from 'sockjs-client';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
-export const useGameSocket = (gameId, onMoveReceived) => {
+export const useGameSocket = (gameId, onMoveReceived, onChatReceived) => {
     const [connected, setConnected] = useState(false);
     const stompClient = useRef(null);
 
@@ -21,6 +21,13 @@ export const useGameSocket = (gameId, onMoveReceived) => {
                     const move = JSON.parse(message.body);
                     onMoveReceived(move);
                 });
+                
+                if (onChatReceived) {
+                    client.subscribe(`/topic/chat/${gameId}`, (message) => {
+                        const chat = JSON.parse(message.body);
+                        onChatReceived(chat);
+                    });
+                }
             },
             onStompError: (frame) => {
                 console.error('STOMP Error:', frame);
@@ -50,5 +57,14 @@ export const useGameSocket = (gameId, onMoveReceived) => {
         }
     };
 
-    return { connected, sendMove };
+    const sendChat = (chatData) => {
+        if (stompClient.current && connected) {
+            stompClient.current.publish({
+                destination: `/app/chat/${gameId}`,
+                body: JSON.stringify({ ...chatData, gameId }),
+            });
+        }
+    };
+
+    return { connected, sendMove, sendChat };
 };

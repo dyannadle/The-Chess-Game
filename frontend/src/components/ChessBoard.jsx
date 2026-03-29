@@ -3,11 +3,17 @@ import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { Trophy, RefreshCw, AlertCircle } from 'lucide-react';
 
-const ChessBoard = ({ gameId, onMoveMade, lastMove }) => {
+const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate }) => {
   const [game, setGame] = useState(new Chess());
   const [moveFrom, setMoveFrom] = useState('');
   const [rightClickedSquares, setRightClickedSquares] = useState({});
   const [optionSquares, setOptionSquares] = useState({});
+
+  useEffect(() => {
+    if (onHistoryUpdate) {
+      onHistoryUpdate(game.history({ verbose: true }));
+    }
+  }, [game, onHistoryUpdate]);
 
   useEffect(() => {
     if (lastMove && lastMove.gameId === gameId) {
