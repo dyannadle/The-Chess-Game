@@ -287,5 +287,54 @@ body {
 @media (max-width: 1024px) {
   .app-layout { flex-direction: column; }
   .sidebar-nav { width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-  .replay-main, .puzzle-main { grid-template-columns: 1fr; }
 }
+
+/* UI Fixes & Utilities */
+.setup-welcome {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.setup-welcome h2 {
+  font-size: 1.75rem;
+  margin: 1rem 0 0.5rem 0;
+  font-weight: 700;
+}
+
+.setup-welcome p {
+  color: #94a3b8;
+  margin: 0;
+  margin-bottom: 2rem;
+}
+
+.setup-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.setup-section label {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Base Utility Classes used in App.jsx */
+.text-center { text-align: center; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.w-full { width: 100%; display: flex; justify-content: center; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-6 { margin-top: 1.5rem; }
+.mt-8 { margin-top: 2rem; }
+.p-8 { padding: 2rem; }
+.p-12 { padding: 3rem; }
