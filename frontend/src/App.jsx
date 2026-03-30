@@ -19,6 +19,7 @@ function App() {
   const [gameMode, setGameMode] = useState('multiplayer');
   const [difficulty, setDifficulty] = useState('medium');
   const [playerColor, setPlayerColor] = useState('white');
+  const [joinCode, setJoinCode] = useState('');
   const [gameConfig, setGameConfig] = useState(null);
 
   const [activeTab, setActiveTab] = useState('play'); // play, history, training
@@ -59,7 +60,7 @@ function App() {
     }
   };
 
-  const { connected, sendMove } = useGameSocket(
+  const { connected, sendMove, sendChat } = useGameSocket(
       joined ? gameId : null, 
       (move) => setLastMove(move),
       (chat) => setChats(prev => [...prev, chat])
@@ -81,8 +82,15 @@ function App() {
     if (playerColor === 'random') {
       finalColor = Math.random() > 0.5 ? 'white' : 'black';
     }
+    
+    // Choose specific room if provided, else create a random room code
+    const targetGameId = (gameMode === 'multiplayer')
+      ? joinCode.trim()
+      : 'match-' + Math.floor(Math.random() * 10000);
+
+    setGameId(targetGameId);
     setPlayerColor(finalColor);
-    setGameConfig({ gameId, gameMode, difficulty, playerColor: finalColor });
+    setGameConfig({ gameId: targetGameId, gameMode, difficulty, playerColor: finalColor });
     setShowSetup(false);
     setJoined(true);
   };
@@ -143,7 +151,12 @@ function App() {
               </div>
             ) : (
               <ChessBoard 
-                config={gameConfig} 
+                {...gameConfig}
+                lastMove={lastMove}
+                onMoveMade={sendMove}
+                chats={chats || []}
+                sendChat={sendChat}
+                currentUser={user}
                 onGameOver={(result) => {
                   setGameConfig(null);
                   fetchMatchHistory();
@@ -227,7 +240,7 @@ function App() {
               {gameMode === 'ai' && (
                 <div className="setup-section">
                   <label>Difficulty</label>
-                  <div className="option-grid">
+                  <div className="option-grid-3">
                       <button className={`option-btn ${difficulty === 'easy' ? 'active' : ''}`} onClick={() => setDifficulty('easy')}>Easy</button>
                       <button className={`option-btn ${difficulty === 'medium' ? 'active' : ''}`} onClick={() => setDifficulty('medium')}>Medium</button>
                       <button className={`option-btn ${difficulty === 'hard' ? 'active' : ''}`} onClick={() => setDifficulty('hard')}>Hard</button>
@@ -235,16 +248,38 @@ function App() {
                 </div>
               )}
 
+              {gameMode === 'multiplayer' && (
+                <div className="setup-section" style={{ marginTop: '0.5rem' }}>
+                  <label>Room Code (Required)</label>
+                  <input 
+                     type="text" 
+                     value={joinCode}
+                     onChange={(e) => setJoinCode(e.target.value)}
+                     placeholder="e.g. chess-room-1"
+                     style={{ padding: '0.75rem', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+                  />
+                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem' }}>Enter a shared room code to play together</p>
+                </div>
+              )}
+
               <div className="setup-section">
                  <label>Your Color</label>
-                 <div className="option-grid">
+                 <div className="option-grid-3">
                     <button className={`option-btn ${playerColor === 'white' ? 'active' : ''}`} onClick={() => setPlayerColor('white')}>White</button>
                     <button className={`option-btn ${playerColor === 'black' ? 'active' : ''}`} onClick={() => setPlayerColor('black')}>Black</button>
+                    <button className={`option-btn ${playerColor === 'random' ? 'active' : ''}`} onClick={() => setPlayerColor('random')}>Random</button>
                  </div>
               </div>
 
               <div className="flex-center mt-8">
-                <button className="btn-accent w-full" onClick={confirmStartGame}>Challenge</button>
+                <button 
+                  className="btn-accent w-full" 
+                  onClick={confirmStartGame}
+                  disabled={gameMode === 'multiplayer' && joinCode.trim() === ''}
+                  style={gameMode === 'multiplayer' && joinCode.trim() === '' ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                >
+                  Challenge
+                </button>
               </div>
               <button className="btn-ghost w-full mt-2" onClick={() => setShowSetup(false)}>Cancel</button>
            </div>
