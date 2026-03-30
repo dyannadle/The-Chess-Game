@@ -19,7 +19,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-chess")
-                .setAllowedOrigins("http://localhost:5173", "http://localhost:3000", "https://*.vercel.app")
+                .setAllowedOriginPatterns("http://localhost:5173", "http://localhost:3000", "https://*.vercel.app", "https://grandmaster-chess-web.vercel.app")
                 .withSockJS();
     }
 }
