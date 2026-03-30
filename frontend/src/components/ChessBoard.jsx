@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { Trophy, RefreshCw, AlertCircle, Flag, Send } from 'lucide-react';
@@ -8,6 +8,13 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
   const [moveFrom, setMoveFrom] = useState('');
   const [optionSquares, setOptionSquares] = useState({});
   const [chatInput, setChatInput] = useState('');
+  const chatMessagesRef = useRef(null);
+
+  useEffect(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+    }
+  }, [chats]);
 
   useEffect(() => {
     if (onHistoryUpdate) {
@@ -201,8 +208,9 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
   const handleSendChat = (e) => {
       e.preventDefault();
       if (chatInput.trim() && sendChat) {
+          const senderName = currentUser?.username || 'Player';
           sendChat({
-              sender: currentUser?.username || 'Player',
+              sender: senderName,
               text: chatInput.trim()
           });
           setChatInput('');
@@ -298,32 +306,38 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
 
              {/* Live Chat */}
              {gameMode === 'multiplayer' && (
-               <div className="chat-container" style={{ flex: 1, display: 'flex', flexDirection: 'column', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1rem', marginBottom: '1rem', minHeight: '150px' }}>
-                 <div className="chat-messages" style={{ flex: 1, overflowY: 'auto', marginBottom: '0.5rem', paddingRight: '0.5rem' }}>
+               <div className="chat-container">
+                 <div className="chat-messages" ref={chatMessagesRef}>
                     {chats.length === 0 ? (
-                      <p className="text-secondary text-center" style={{ fontSize: '0.8rem', marginTop: '1rem' }}>No messages yet</p>
+                      <p className="no-msgs">No messages yet</p>
                     ) : (
-                      chats.map((msg, idx) => (
-                        <div key={idx} style={{ marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                           <strong style={{ color: msg.sender === currentUser?.username ? '#10b981' : '#3b82f6' }}>{msg.sender}:</strong>
-                           <span style={{ marginLeft: '0.5rem' }}>{msg.text}</span>
-                        </div>
-                      ))
+                      chats.map((msg, idx) => {
+                        const isSelf = msg.sender === (currentUser?.username || 'Player');
+                        return (
+                          <div key={idx} className={`chat-row ${isSelf ? 'row-self' : 'row-other'}`}>
+                            <div className={`chat-bubble ${isSelf ? 'bubble-self' : 'bubble-other'}`}>
+                               {!isSelf && <div className="sender-name">{msg.sender}</div>}
+                               {isSelf && <div className="sender-name">You</div>}
+                               <div className="message-text">{msg.text}</div>
+                            </div>
+                          </div>
+                        );
+                      })
                     )}
                  </div>
-                 <form onSubmit={handleSendChat} style={{ display: 'flex', gap: '0.5rem' }}>
+                  <form onSubmit={handleSendChat} className="chat-input-wrapper">
                     <input 
                       type="text" 
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       placeholder="Type message..." 
-                      style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.85rem' }}
+                      className="chat-input"
                     />
-                    <button type="submit" style={{ padding: '0.5rem', background: '#10b981', color: '#fff', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+                    <button type="submit" className="chat-send-btn">
                        <Send size={16} />
                     </button>
-                 </form>
-               </div>
+                  </form>
+                </div>
              )}
 
            </div>

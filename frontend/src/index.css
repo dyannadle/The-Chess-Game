@@ -21,6 +21,132 @@ body {
   box-sizing: border-box;
 }
 
+/* Modern Chat Bubbles */
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+  margin-bottom: 1rem;
+  min-height: 250px;
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  padding-right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  scroll-behavior: smooth;
+}
+
+.chat-row {
+  display: flex;
+  width: 100%;
+}
+
+.row-self {
+  justify-content: flex-end;
+}
+
+.row-other {
+  justify-content: flex-start;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  padding: 0.75rem 1rem;
+  border-radius: 18px;
+  position: relative;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.bubble-self {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.bubble-other {
+  background: #2d3748;
+  color: #e2e8f0;
+  border-bottom-left-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sender-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  opacity: 0.9;
+  text-transform: capitalize;
+}
+
+.bubble-self .sender-name {
+  color: #d1fae5;
+  text-align: right;
+}
+
+.bubble-other .sender-name {
+  color: #3b82f6;
+}
+
+.message-text {
+  word-break: break-word;
+}
+
+.no-msgs {
+  color: #64748b;
+  text-align: center;
+  font-style: italic;
+  margin-top: 2rem;
+  font-size: 0.85rem;
+}
+
+.chat-input-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-input {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.chat-send-btn {
+  padding: 0.75rem;
+  background: #10b981;
+  color: #fff;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.chat-send-btn:hover {
+  background: #059669;
+  transform: scale(1.05);
+}
+
 /* Base Components */
 .glass-container {
   background: rgba(255, 255, 255, 0.03);
