@@ -9,12 +9,19 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
   const [optionSquares, setOptionSquares] = useState({});
   const [chatInput, setChatInput] = useState('');
   const chatMessagesRef = useRef(null);
+  const moveHistoryRef = useRef(null);
 
   useEffect(() => {
     if (chatMessagesRef.current) {
       chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
     }
   }, [chats]);
+
+  useEffect(() => {
+    if (moveHistoryRef.current) {
+      moveHistoryRef.current.scrollTop = moveHistoryRef.current.scrollHeight;
+    }
+  }, [liveMoves]);
 
   useEffect(() => {
     if (onHistoryUpdate) {
@@ -286,7 +293,7 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
              
              {/* Moves History */}
-             <div className="move-history-scroll" style={{ flex: 1, overflowY: 'auto', marginBottom: '1rem', padding: '0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+             <div className="move-history-scroll" ref={moveHistoryRef} style={{ flex: 1, overflowY: 'auto', marginBottom: '1rem', padding: '0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
                {liveMoves.length === 0 ? (
                  <p className="text-secondary italic text-center" style={{ fontSize: '0.875rem', marginTop: '1rem' }}>Making the first move...</p>
                ) : (
@@ -294,9 +301,9 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
                     <tbody>
                       {getMovePairs().map((pair) => (
                         <tr key={pair.turn} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                          <td style={{ padding: '0.5rem', color: '#94a3b8', width: '30px', textAlign: 'center' }}>{pair.turn}.</td>
-                          <td style={{ padding: '0.5rem', fontWeight: '500' }}>{pair.white}</td>
-                          <td style={{ padding: '0.5rem', fontWeight: '500' }}>{pair.black}</td>
+                          <td style={{ padding: '0.6rem 0.5rem', color: '#94a3b8', width: '35px', textAlign: 'center', fontWeight: 'bold' }}>{pair.turn}.</td>
+                          <td style={{ padding: '0.6rem 0.5rem', fontWeight: '600', color: '#e2e8f0' }}>{pair.white}</td>
+                          <td style={{ padding: '0.6rem 0.5rem', fontWeight: '600', color: '#e2e8f0' }}>{pair.black}</td>
                         </tr>
                       ))}
                     </tbody>
