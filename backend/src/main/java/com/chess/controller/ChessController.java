@@ -28,6 +28,7 @@ public class ChessController {
     public String joinRoom(@DestinationVariable String gameId, @DestinationVariable String userId) {
         if (roomManager.canJoin(gameId, userId)) {
             roomManager.join(gameId, userId);
+            gameHistoryService.registerPlayer(gameId, userId);
             logger.info("User {} joined game {}", userId, gameId);
             return "JOIN_SUCCESS:" + userId;
         } else {

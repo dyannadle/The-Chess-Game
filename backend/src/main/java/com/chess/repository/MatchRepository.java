@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface MatchRepository extends JpaRepository<Match, Long> {
     Optional<Match> findByGameId(String gameId);
-    List<Match> findByWhitePlayerOrBlackPlayer(User whitePlayer, User blackPlayer);
+    List<Match> findByWhitePlayerOrBlackPlayerOrderByIdDesc(User whitePlayer, User blackPlayer);
 }

@@ -12,6 +12,31 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GameHistoryService {
+    @Transactional
+    public void registerPlayer(String gameId, String userId) {
+        if (userId == null || userId.equals("undefined")) return;
+        
+        Match match = matchRepository.findByGameId(gameId)
+            .filter(m -> m.getResult() == null || m.getResult().equals("IN_PROGRESS"))
+            .orElseGet(() -> {
+                Match newMatch = new Match();
+                newMatch.setGameId(gameId);
+                newMatch.setResult("IN_PROGRESS");
+                return matchRepository.save(newMatch);
+            });
+
+        userRepository.findById(Long.parseLong(userId)).ifPresent(user -> {
+            // First joiner is white, second is black (or vice versa based on room logic)
+            // But we just want to ensure THIS user is one of the players.
+            if (match.getWhitePlayer() == null) {
+                match.setWhitePlayer(user);
+                matchRepository.save(match);
+            } else if (match.getBlackPlayer() == null && !match.getWhitePlayer().getId().equals(user.getId())) {
+                match.setBlackPlayer(user);
+                matchRepository.save(match);
+            }
+        });
+    }
 
     @Autowired
     private MatchRepository matchRepository;

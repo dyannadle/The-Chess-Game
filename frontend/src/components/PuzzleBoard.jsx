@@ -19,49 +19,55 @@ const PuzzleBoard = ({ puzzle, onNext, onBack }) => {
   function onDrop(sourceSquare, targetSquare) {
     if (status !== 'solve') return false;
 
-    const moveString = `${sourceSquare}${targetSquare}`;
-    const expectedMove = solution[currentStep];
-
-    if (moveString === expectedMove) {
-      const move = game.move({
+    const gameCopy = new Chess(game.fen());
+    let move = null;
+    try {
+      move = gameCopy.move({
         from: sourceSquare,
         to: targetSquare,
         promotion: 'q',
       });
+    } catch (e) {
+      // Not a valid chess move
+      return false;
+    }
 
-      if (move === null) return false;
+    if (!move) return false;
 
-      setGame(new Chess(game.fen()));
+    const moveString = `${sourceSquare}${targetSquare}`;
+    const expectedMove = solution[currentStep];
+
+    if (moveString === expectedMove) {
+      // Correct Move
+      const newGame = new Chess(game.fen());
+      newGame.move(move);
+      setGame(newGame);
+      setHintSquare(null);
       
       if (currentStep + 1 === solution.length) {
         setStatus('success');
       } else {
-        const nextStep = currentStep + 1;
-        setCurrentStep(nextStep);
-        
-        // Automate opponent's move (AI)
+        // AI Response Logic...
+        setCurrentStep(currentStep + 1);
         setTimeout(() => {
-          const aiMoveStr = solution[nextStep];
+          const aiMoveStr = solution[currentStep + 1];
           const from = aiMoveStr.substring(0, 2);
           const to = aiMoveStr.substring(2, 4);
-          
-          safeGameMutate((game) => {
-             game.move({ from, to, promotion: 'q' });
-          });
-          
-          if (nextStep + 1 === solution.length) {
+          newGame.move({ from, to, promotion: 'q' });
+          setGame(new Chess(newGame.fen()));
+          setCurrentStep(currentStep + 2);
+          if (currentStep + 2 === solution.length) {
             setStatus('success');
-          } else {
-            setCurrentStep(nextStep + 1);
           }
         }, 600);
       }
       return true;
     } else {
+      // Wrong solution but valid move
       setStatus('fail');
       return false;
     }
-  }
+  };
 
   function safeGameMutate(modify) {
     setGame((g) => {

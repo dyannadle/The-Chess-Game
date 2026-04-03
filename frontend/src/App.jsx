@@ -126,6 +126,7 @@ function App() {
         <div className="nav-logo">
           <img src="/logo.png" alt="GrandMaster Logo" style={{ width: '40px', height: '40px', borderRadius: '8px' }} />
           <span>GrandMaster</span>
+          <span style={{ fontSize: '10px', opacity: 0.5, marginLeft: '8px' }}>v1.1</span>
         </div>
         <button 
           className={`nav-item ${activeTab === 'play' ? 'active' : ''}`} 

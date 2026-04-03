@@ -56,7 +56,7 @@ public class MatchController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Match>> getUserMatches(@PathVariable Long userId) {
         return userRepository.findById(userId).map(user -> {
-            List<Match> matches = matchRepository.findByWhitePlayerOrBlackPlayer(user, user);
+            List<Match> matches = matchRepository.findByWhitePlayerOrBlackPlayerOrderByIdDesc(user, user);
             return ResponseEntity.ok(matches);
         }).orElse(ResponseEntity.notFound().build());
     }
