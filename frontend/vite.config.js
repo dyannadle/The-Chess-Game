@@ -11,6 +11,11 @@ export default defineConfig({
   define: {
     global: 'window',
   },
+  base: '/',
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
   server: {
     port: 3000,
     open: true
