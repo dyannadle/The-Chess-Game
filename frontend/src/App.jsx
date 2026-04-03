@@ -123,7 +123,10 @@ function App() {
   return (
     <div className="app-layout">
       <nav className="sidebar-nav">
-        <div className="nav-logo">GrandMaster</div>
+        <div className="nav-logo">
+          <img src="/logo.png" alt="GrandMaster Logo" style={{ width: '40px', height: '40px', borderRadius: '8px' }} />
+          <span>GrandMaster</span>
+        </div>
         <button 
           className={`nav-item ${activeTab === 'play' ? 'active' : ''}`} 
           onClick={() => setActiveTab('play')}
