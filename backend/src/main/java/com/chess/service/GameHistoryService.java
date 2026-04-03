@@ -25,11 +25,14 @@ public class GameHistoryService {
     @Transactional
     public void saveMove(String gameId, MoveRequest move) {
         // Find or create the match session
-        Match match = matchRepository.findByGameId(gameId).orElseGet(() -> {
-            Match newMatch = new Match();
-            newMatch.setGameId(gameId);
-            return matchRepository.save(newMatch);
-        });
+        Match match = matchRepository.findByGameId(gameId)
+            .filter(m -> m.getResult() == null || m.getResult().equals("IN_PROGRESS"))
+            .orElseGet(() -> {
+                Match newMatch = new Match();
+                newMatch.setGameId(gameId);
+                newMatch.setResult("IN_PROGRESS");
+                return matchRepository.save(newMatch);
+            });
 
         // Set players if not already set (for first move)
         if (move.getUserId() != null) {
@@ -43,7 +46,6 @@ public class GameHistoryService {
                 }
             });
         }
-
         // Record the move
         MatchMove matchMove = new MatchMove();
         matchMove.setMatch(match);

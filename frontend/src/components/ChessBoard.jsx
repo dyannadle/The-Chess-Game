@@ -77,6 +77,11 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
 
   useEffect(() => {
     if (lastMove && lastMove.gameId === gameId) {
+      // Sync timers and active state if present
+      if (lastMove.whiteTime !== undefined) setWhiteTime(lastMove.whiteTime);
+      if (lastMove.blackTime !== undefined) setBlackTime(lastMove.blackTime);
+      if (lastMove.gameActive !== undefined) setIsGameActive(lastMove.gameActive);
+
       safeGameMutate((game) => {
         try {
           game.move({
@@ -130,7 +135,10 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
         piece: moveResult.piece,
         color: moveResult.color,
         captured: moveResult.captured,
-        userId: currentUser?.id
+        userId: currentUser?.id,
+        whiteTime: whiteTime,
+        blackTime: blackTime,
+        gameActive: true
       });
   }
 

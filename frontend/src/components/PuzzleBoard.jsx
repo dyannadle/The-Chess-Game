@@ -7,6 +7,7 @@ const PuzzleBoard = ({ puzzle, onNext, onBack }) => {
   const [game, setGame] = useState(new Chess(puzzle.fen));
   const [status, setStatus] = useState('solve'); // solve, success, fail
   const [currentStep, setCurrentStep] = useState(0);
+  const [hintSquare, setHintSquare] = useState(null);
   const solution = puzzle.solution.split(',');
 
   useEffect(() => {
@@ -35,9 +36,25 @@ const PuzzleBoard = ({ puzzle, onNext, onBack }) => {
       if (currentStep + 1 === solution.length) {
         setStatus('success');
       } else {
-        setCurrentStep(currentStep + 1);
-        // AI move if it's their turn
-        // For simple puzzles, we assume one move at a time for now
+        const nextStep = currentStep + 1;
+        setCurrentStep(nextStep);
+        
+        // Automate opponent's move (AI)
+        setTimeout(() => {
+          const aiMoveStr = solution[nextStep];
+          const from = aiMoveStr.substring(0, 2);
+          const to = aiMoveStr.substring(2, 4);
+          
+          safeGameMutate((game) => {
+             game.move({ from, to, promotion: 'q' });
+          });
+          
+          if (nextStep + 1 === solution.length) {
+            setStatus('success');
+          } else {
+            setCurrentStep(nextStep + 1);
+          }
+        }, 600);
       }
       return true;
     } else {
@@ -45,6 +62,23 @@ const PuzzleBoard = ({ puzzle, onNext, onBack }) => {
       return false;
     }
   }
+
+  function safeGameMutate(modify) {
+    setGame((g) => {
+      const update = new Chess();
+      update.loadPgn(g.pgn());
+      modify(update);
+      return update;
+    });
+  }
+
+  const showHint = () => {
+    const nextMove = solution[currentStep];
+    if (nextMove) {
+      setHintSquare(nextMove.substring(0, 2));
+      setTimeout(() => setHintSquare(null), 2000);
+    }
+  };
 
   const resetPuzzle = () => {
     setGame(new Chess(puzzle.fen));
@@ -69,7 +103,8 @@ const PuzzleBoard = ({ puzzle, onNext, onBack }) => {
           <Chessboard 
             position={game.fen()} 
             onPieceDrop={onDrop}
-            boardOrientation={game.turn() === 'w' ? 'white' : 'black'}
+            boardOrientation={puzzle.fen.includes(' w ') ? 'white' : 'black'}
+            customSquareStyles={hintSquare ? { [hintSquare]: { background: 'rgba(255, 255, 0, 0.4)' } } : {}}
           />
         </div>
 
@@ -102,8 +137,8 @@ const PuzzleBoard = ({ puzzle, onNext, onBack }) => {
           )}
 
           <div className="hint-section mt-auto">
-            <button className="btn-ghost w-full">
-               Need a hint? (Reveal First Move)
+            <button className="btn-ghost w-full" onClick={showHint}>
+               Need a hint? (Reveal Piece)
             </button>
           </div>
         </div>

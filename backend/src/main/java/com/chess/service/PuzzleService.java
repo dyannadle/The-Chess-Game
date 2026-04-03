@@ -27,12 +27,11 @@ public class PuzzleService {
     }
 
     private void manualSeed() {
-        puzzleRepository.save(new Puzzle(null, "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR b KQkq - 0 4", "d8f6", "Respond to the Scholar's Mate threat", "Easy"));
-        puzzleRepository.save(new Puzzle(null, "4kb1r/p2n1ppp/4q3/4p1B1/4P3/1Q6/PPP2PPP/2KR4 w k - 0 1", "b3b8,d7b8,d1d8", "Back Rank Mate Combo", "Medium"));
-        puzzleRepository.save(new Puzzle(null, "r1bqk2r/pppp1ppp/2n2n2/4p3/1bB1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 5", "e1g1", "Castle to safety", "Easy"));
-        puzzleRepository.save(new Puzzle(null, "rnbqkb1r/pppp1ppp/5n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 3", "f6h5", "Free Queen!", "Easy"));
-        puzzleRepository.save(new Puzzle(null, "2r3k1/1p3p1p/p5p1/5q2/8/P1BR4/1P3PPP/3R2K1 w - - 0 1", "d3d8,c8d8,d1d8", "Classic Ladder Mate", "Medium"));
-        // ... more can be added here
+        puzzleRepository.save(new Puzzle(null, "r1bqkbnr/pppp1ppp/2n5/4p1B1/4P3/5Q2/PPPP1PPP/RN2KBNR b KQkq - 0 1", "d8f6", "Respond to the Scholar's Mate threat", "Easy"));
+        puzzleRepository.save(new Puzzle(null, "4kb1r/p2n1ppp/4q3/4p1B1/4P3/1Q6/PPP2PPP/2KR4 w k - 0 1", "b3b8,d7b8,d1d8", "Advanced Back Rank Mate", "Hard"));
+        puzzleRepository.save(new Puzzle(null, "2r3k1/1p3p1p/p5p1/5q2/8/P1BR4/1P3PPP/3R2K1 w - - 0 1", "d3d8,c8d8,d1d8", "Ladder Mate Combination", "Medium"));
+        puzzleRepository.save(new Puzzle(null, "r1bq1rk1/pppp1ppp/2n2n2/4p3/2B1P3/2P2N2/PPP2PPP/R1BQR1K1 b - - 0 1", "d7d6", "Solidify the center", "Easy"));
+        puzzleRepository.save(new Puzzle(null, "6k1/5ppp/8/8/8/8/5PPP/6K1 w - - 0 1", "g1f1", "King activity in endgame", "Easy"));
     }
 
     private void generateVariations(int count) {

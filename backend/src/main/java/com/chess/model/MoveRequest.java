@@ -18,4 +18,7 @@ public class MoveRequest {
     private String color;    // "w" or "b"
     private String captured; // Captured piece name
     private Long userId;     // User ID for history
+    private Integer whiteTime; // White's remaining time in seconds
+    private Integer blackTime; // Black's remaining time in seconds
+    private Boolean gameActive; // Is the match clock running?
 }
