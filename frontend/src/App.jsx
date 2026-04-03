@@ -48,6 +48,10 @@ function App() {
   }, [user]);
 
   const fetchMatchHistory = async () => {
+    if (!user || user.id === undefined || user.id === null) {
+      console.warn('Cannot fetch history: Missing User ID');
+      return;
+    }
     try {
       const response = await axios.get(`${API_URL}/api/matches/user/${user.id}`);
       setMatchHistory(response.data);

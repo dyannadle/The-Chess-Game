@@ -11,6 +11,8 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
   const chatMessagesRef = useRef(null);
   const moveHistoryRef = useRef(null);
 
+  const liveMoves = game.history();
+
   useEffect(() => {
     if (chatMessagesRef.current) {
       chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
@@ -198,7 +200,7 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
   }
 
 
-  const liveMoves = game.history();
+  // Removed duplicate liveMoves from here to fix ReferenceError
 
   const getMovePairs = () => {
     const pairs = [];
