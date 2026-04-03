@@ -26,7 +26,13 @@ function App() {
   const [matchHistory, setMatchHistory] = useState([]);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [selectedPuzzle, setSelectedPuzzle] = useState(null);
-  const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+  const getApiUrl = () => {
+    const envUrl = import.meta.env.VITE_BACKEND_URL;
+    if (envUrl && envUrl.trim() !== '') return envUrl.replace(/\/$/, '');
+    return 'http://localhost:8080';
+  };
+
+  const API_URL = getApiUrl();
 
   useEffect(() => {
     const savedUser = localStorage.getItem('chess_user');

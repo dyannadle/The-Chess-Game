@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { Shield, Lock, User as UserIcon, LogIn, UserPlus, Trophy } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+const getApiUrl = () => {
+  const envUrl = import.meta.env.VITE_BACKEND_URL;
+  if (envUrl && envUrl.trim() !== '') return envUrl.replace(/\/$/, '');
+  return 'http://localhost:8080';
+};
+
+const API_URL = getApiUrl();
 
 const Auth = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
