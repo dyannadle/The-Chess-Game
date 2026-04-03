@@ -4,8 +4,9 @@ import SockJS from 'sockjs-client';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
-export const useGameSocket = (gameId, onMoveReceived, onChatReceived) => {
+export const useGameSocket = (gameId, userId, onMoveReceived, onChatReceived, onJoinStatus) => {
     const [connected, setConnected] = useState(false);
+    const [error, setError] = useState(null);
     const stompClient = useRef(null);
 
     useEffect(() => {
@@ -18,14 +19,31 @@ export const useGameSocket = (gameId, onMoveReceived, onChatReceived) => {
                 console.log('Connected to WebSocket');
                 setConnected(true);
                 client.subscribe(`/topic/game/${gameId}`, (message) => {
-                    const move = JSON.parse(message.body);
-                    onMoveReceived(move);
+                    if (message.body.startsWith('JOIN_SUCCESS:')) {
+                        if (onJoinStatus) onJoinStatus({ status: 'success', userId: message.body.split(':')[1] });
+                    } else if (message.body.startsWith('JOIN_ERROR:')) {
+                        if (onJoinStatus) onJoinStatus({ status: 'error', message: message.body.split(':')[1] });
+                        if (message.body === 'JOIN_ERROR:ROOM_FULL' && onJoinStatus) {
+                             setError('Room is full (max 2 players)');
+                        }
+                    } else {
+                        const move = JSON.parse(message.body);
+                        onMoveReceived(move);
+                    }
                 });
                 
                 if (onChatReceived) {
                     client.subscribe(`/topic/chat/${gameId}`, (message) => {
                         const chat = JSON.parse(message.body);
                         onChatReceived(chat);
+                    });
+                }
+
+                // Send JOIN message
+                if (userId) {
+                    client.publish({
+                        destination: `/app/join/${gameId}/${userId}`,
+                        body: ''
                     });
                 }
             },
@@ -66,5 +84,5 @@ export const useGameSocket = (gameId, onMoveReceived, onChatReceived) => {
         }
     };
 
-    return { connected, sendMove, sendChat };
+    return { connected, error, sendMove, sendChat };
 };

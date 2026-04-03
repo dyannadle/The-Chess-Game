@@ -17,4 +17,5 @@ public class MoveRequest {
     private String piece;    // Piece name (e.g., "p", "n")
     private String color;    // "w" or "b"
     private String captured; // Captured piece name
+    private Long userId;     // User ID for history
 }

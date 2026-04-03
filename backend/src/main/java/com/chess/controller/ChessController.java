@@ -3,6 +3,7 @@ package com.chess.controller;
 import com.chess.model.ChatMessage;
 import com.chess.model.MoveRequest;
 import com.chess.service.GameHistoryService;
+import com.chess.service.RoomManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,22 @@ public class ChessController {
 
     @Autowired
     private GameHistoryService gameHistoryService;
+
+    @Autowired
+    private RoomManager roomManager;
+
+    @MessageMapping("/join/{gameId}/{userId}")
+    @SendTo("/topic/game/{gameId}")
+    public String joinRoom(@DestinationVariable String gameId, @DestinationVariable String userId) {
+        if (roomManager.canJoin(gameId, userId)) {
+            roomManager.join(gameId, userId);
+            logger.info("User {} joined game {}", userId, gameId);
+            return "JOIN_SUCCESS:" + userId;
+        } else {
+            logger.warn("Room {} is full. User {} rejected.", gameId, userId);
+            return "JOIN_ERROR:ROOM_FULL";
+        }
+    }
 
     @MessageMapping("/move/{gameId}")
     @SendTo("/topic/game/{gameId}")

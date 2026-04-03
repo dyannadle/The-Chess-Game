@@ -4,6 +4,7 @@ import com.chess.model.Match;
 import com.chess.model.MatchMove;
 import com.chess.repository.MatchRepository;
 import com.chess.repository.MatchMoveRepository;
+import com.chess.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,6 +23,9 @@ public class MatchController {
 
     @Autowired
     private MatchMoveRepository matchMoveRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping("/{matchId}/pgn")
     public ResponseEntity<byte[]> downloadPgn(@PathVariable Long matchId) {
@@ -51,6 +55,9 @@ public class MatchController {
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Match>> getUserMatches(@PathVariable Long userId) {
-        return ResponseEntity.ok(matchRepository.findAll()); 
+        return userRepository.findById(userId).map(user -> {
+            List<Match> matches = matchRepository.findByWhitePlayerOrBlackPlayer(user, user);
+            return ResponseEntity.ok(matches);
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

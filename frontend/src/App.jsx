@@ -20,6 +20,7 @@ function App() {
   const [difficulty, setDifficulty] = useState('medium');
   const [playerColor, setPlayerColor] = useState('white');
   const [joinCode, setJoinCode] = useState('');
+  const [matchDuration, setMatchDuration] = useState(10); // in minutes
   const [gameConfig, setGameConfig] = useState(null);
 
   const [activeTab, setActiveTab] = useState('play'); // play, history, training
@@ -70,10 +71,20 @@ function App() {
     }
   };
 
-  const { connected, sendMove, sendChat } = useGameSocket(
+  const { connected, error, sendMove, sendChat } = useGameSocket(
       joined ? gameId : null, 
-      (move) => setLastMove(move),
-      (chat) => setChats(prev => [...prev, chat])
+      user?.id,
+      (move) => {
+        setLastMove(move);
+      },
+      (chat) => {
+        setChats(prev => [...prev, chat]);
+      },
+      (status) => {
+        if (status.status === 'error') {
+          console.error('Join Error:', status.message);
+        }
+      }
   );
 
   const handleLogin = (userData) => {
@@ -100,7 +111,7 @@ function App() {
 
     setGameId(targetGameId);
     setPlayerColor(finalColor);
-    setGameConfig({ gameId: targetGameId, gameMode, difficulty, playerColor: finalColor });
+    setGameConfig({ gameId: targetGameId, gameMode, difficulty, playerColor: finalColor, matchDuration });
     setShowSetup(false);
     setJoined(true);
   };
@@ -146,6 +157,13 @@ function App() {
       </nav>
 
       <div className="app-main">
+        {error && (
+          <div className="status-alert error" style={{ margin: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', padding: '1rem', borderRadius: '12px', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <AlertCircle size={20} />
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'underline' }}>Reload</button>
+          </div>
+        )}
         {activeTab === 'play' && (
           <div className="game-section">
             {!gameConfig ? (
@@ -279,6 +297,18 @@ function App() {
                     <button className={`option-btn ${playerColor === 'black' ? 'active' : ''}`} onClick={() => setPlayerColor('black')}>Black</button>
                     <button className={`option-btn ${playerColor === 'random' ? 'active' : ''}`} onClick={() => setPlayerColor('random')}>Random</button>
                  </div>
+              </div>
+
+              <div className="setup-section">
+                  <label>Duration (Minutes)</label>
+                  <input 
+                     type="number" 
+                     value={matchDuration}
+                     onChange={(e) => setMatchDuration(Math.max(1, parseInt(e.target.value) || 1))}
+                     min="1"
+                     max="60"
+                     style={{ padding: '0.75rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+                  />
               </div>
 
               <div className="flex-center mt-8">

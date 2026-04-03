@@ -3,15 +3,18 @@ import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { Trophy, RefreshCw, AlertCircle, Flag, Send } from 'lucide-react';
 
-const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, difficulty, playerColor, onGameOver, chats = [], sendChat, currentUser }) => {
+const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, difficulty, playerColor, onGameOver, chats = [], sendChat, currentUser, matchDuration = 10 }) => {
   const [game, setGame] = useState(new Chess());
   const [moveFrom, setMoveFrom] = useState('');
   const [optionSquares, setOptionSquares] = useState({});
   const [chatInput, setChatInput] = useState('');
+  const [isGameActive, setIsGameActive] = useState(false);
+  const [whiteTime, setWhiteTime] = useState(matchDuration * 60);
+  const [blackTime, setBlackTime] = useState(matchDuration * 60);
   const chatMessagesRef = useRef(null);
   const moveHistoryRef = useRef(null);
 
-  const liveMoves = game.history();
+  const liveMoves = game.history({ verbose: true });
 
   useEffect(() => {
     if (chatMessagesRef.current) {
@@ -30,6 +33,38 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
       onHistoryUpdate(game.history({ verbose: true }));
     }
   }, [game, onHistoryUpdate]);
+
+  // Timer Effect
+  useEffect(() => {
+    let interval = null;
+    if (isGameActive && !game.isGameOver()) {
+      interval = setInterval(() => {
+        if (game.turn() === 'w') {
+          setWhiteTime((p) => {
+            if (p <= 0) { setIsGameActive(false); onGameOver('BLACK_WIN'); return 0; }
+            return p - 1;
+          });
+        } else {
+          setBlackTime((p) => {
+            if (p <= 0) { setIsGameActive(false); onGameOver('WHITE_WIN'); return 0; }
+            return p - 1;
+          });
+        }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isGameActive, game, onGameOver]);
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const getFullPieceName = (p) => {
+    const names = { 'p': 'Pawn', 'n': 'Knight', 'b': 'Bishop', 'r': 'Rook', 'q': 'Queen', 'k': 'King' };
+    return names[p] || p;
+  };
 
   function safeGameMutate(modify) {
     setGame((g) => {
@@ -86,6 +121,7 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
       const moveResult = gameCopy.move(move);
       
       setGame(gameCopy);
+      setIsGameActive(true); // Start timing on first move (against AI)
       onMoveMade({
         from: moveResult.from,
         to: moveResult.to,
@@ -93,7 +129,8 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
         san: moveResult.san,
         piece: moveResult.piece,
         color: moveResult.color,
-        captured: moveResult.captured
+        captured: moveResult.captured,
+        userId: currentUser?.id
       });
   }
 
@@ -149,6 +186,7 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
       }
 
       setGame(gameCopy);
+      setIsGameActive(true); // Start timing on first move
       setMoveFrom('');
       setOptionSquares({});
       onMoveMade({
@@ -158,7 +196,8 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
         san: move.san,
         piece: move.piece,
         color: move.color,
-        captured: move.captured
+        captured: move.captured,
+        userId: currentUser?.id
       });
     } catch (e) {
       const hasOptions = getMoveOptions(square);
@@ -183,6 +222,7 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
       if (move === null) return false;
 
       setGame(gameCopy);
+      setIsGameActive(true); // Start timing on first move
       setOptionSquares({});
       onMoveMade({
         from: move.from,
@@ -191,7 +231,8 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
         san: move.san,
         piece: move.piece,
         color: move.color,
-        captured: move.captured
+        captured: move.captured,
+        userId: currentUser?.id
       });
       return true;
     } catch (e) {
@@ -205,11 +246,11 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
   const getMovePairs = () => {
     const pairs = [];
     for (let i = 0; i < liveMoves.length; i += 2) {
-        pairs.push({
-            turn: (i / 2) + 1,
-            white: liveMoves[i],
-            black: liveMoves[i + 1] || ''
-        });
+      pairs.push({
+        number: Math.floor(i / 2) + 1,
+        white: liveMoves[i],
+        black: liveMoves[i + 1],
+      });
     }
     return pairs;
   };
@@ -287,11 +328,22 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
         <div className="status-box glass-container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
            <h3 className="section-title mb-4">
               Live Match
-              {gameMode === 'multiplayer' && (
-                <div className="text-xs text-secondary mt-1 tracking-wider" style={{ color: '#10b981', fontSize: '0.8rem' }}>Room Code: {gameId}</div>
-              )}
+              <span className="text-xs text-secondary mt-1 tracking-wider" style={{ color: '#10b981', fontSize: '0.8rem' }}>
+                {gameMode === 'ai' ? `vs Master Stockfish (LVL ${difficulty})` : `Room Code: ${gameId}`}
+              </span>
            </h3>
            
+           <div className="game-timers" style={{ display: 'flex', gap: '2rem', alignItems: 'center', marginBottom: '1rem' }}>
+              <div className={`timer ${game.turn() === 'w' ? 'active-timer' : ''}`} style={{ padding: '0.5rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>White</span>
+                <span style={{ fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'monospace' }}>{formatTime(whiteTime)}</span>
+              </div>
+              <div className={`timer ${game.turn() === 'b' ? 'active-timer' : ''}`} style={{ padding: '0.5rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Black</span>
+                <span style={{ fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'monospace' }}>{formatTime(blackTime)}</span>
+              </div>
+            </div>
+
            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
              
              {/* Moves History */}
@@ -300,12 +352,33 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
                  <p className="text-secondary italic text-center" style={{ fontSize: '0.875rem', marginTop: '1rem' }}>Making the first move...</p>
                ) : (
                  <table style={{ width: '100%', fontSize: '0.9rem', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ textAlign: 'left', padding: '0.5rem' }}>#</th>
+                        <th style={{ textAlign: 'left', padding: '0.5rem' }}>White</th>
+                        <th style={{ textAlign: 'left', padding: '0.5rem' }}>Black</th>
+                      </tr>
+                    </thead>
                     <tbody>
                       {getMovePairs().map((pair) => (
-                        <tr key={pair.turn} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                          <td style={{ padding: '0.6rem 0.5rem', color: '#94a3b8', width: '35px', textAlign: 'center', fontWeight: 'bold' }}>{pair.turn}.</td>
-                          <td style={{ padding: '0.6rem 0.5rem', fontWeight: '600', color: '#e2e8f0' }}>{pair.white}</td>
-                          <td style={{ padding: '0.6rem 0.5rem', fontWeight: '600', color: '#e2e8f0' }}>{pair.black}</td>
+                        <tr key={pair.number} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <td style={{ padding: '0.6rem 0.5rem', color: '#94a3b8', width: '35px', textAlign: 'center', fontWeight: 'bold' }}>{pair.number}.</td>
+                          <td style={{ padding: '0.6rem 0.5rem', fontWeight: '600', color: '#e2e8f0' }}>
+                            {pair.white ? (
+                              <div className="move-info-box">
+                                <span className="move-san">{pair.white.san}</span>
+                                <span className="move-text-detail" style={{ fontSize: '0.7rem', display: 'block', color: '#64748b' }}>{getFullPieceName(pair.white.piece)}: {pair.white.from} → {pair.white.to}</span>
+                              </div>
+                            ) : '-'}
+                          </td>
+                          <td style={{ padding: '0.6rem 0.5rem', fontWeight: '600', color: '#e2e8f0' }}>
+                            {pair.black ? (
+                              <div className="move-info-box">
+                                <span className="move-san">{pair.black.san}</span>
+                                <span className="move-text-detail" style={{ fontSize: '0.7rem', display: 'block', color: '#64748b' }}>{getFullPieceName(pair.black.piece)}: {pair.black.from} → {pair.black.to}</span>
+                              </div>
+                            ) : '-'}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -352,6 +425,9 @@ const ChessBoard = ({ gameId, onMoveMade, lastMove, onHistoryUpdate, gameMode, d
            </div>
 
            <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+             {!isGameActive && !game.isGameOver() && (
+                 <button className="btn-accent w-full mb-2" onClick={() => setIsGameActive(true)}>Start Game</button>
+             )}
              <button 
                onClick={() => onGameOver && onGameOver('Resigned')} 
                className="btn-secondary w-full"
