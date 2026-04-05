@@ -1,15 +1,77 @@
+<!-- PURPOSE: The single HTML page of this Single-Page Application (SPA). -->
+<!-- IMPACT: This is the ONLY HTML file served to the browser. React takes over and renders everything inside <div id="root">. -->
+<!--         Vite uses this as the entry point for both development and production builds. -->
+<!-- ALTERNATIVE: Use server-side rendering (SSR) with Next.js for better SEO and initial load performance. -->
 <!DOCTYPE html>
+<!-- PURPOSE: Declares this as an HTML5 document. Required for browsers to use modern rendering mode. -->
+<!-- IMPACT: Without this, browsers fall back to "quirks mode" which renders pages inconsistently. -->
+
 <html lang="en">
+<!-- PURPOSE: Sets the document language to English. -->
+<!-- IMPACT: Assistive technologies (screen readers) use this for pronunciation and language-specific behavior. -->
+<!--         Search engines use it for content language detection. -->
+<!-- ALTERNATIVE: lang="en-US" for more specific locale. -->
+
   <head>
+    <!-- PURPOSE: Declares the character encoding as UTF-8. -->
+    <!-- IMPACT: Ensures special characters (chess symbols ♔♕♖, emojis, accented letters) render correctly. -->
+    <!-- ALTERNATIVE: UTF-16 or ISO-8859-1 (limited character support — not recommended). -->
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
+    <!-- PURPOSE: Sets the browser tab icon (favicon) to the logo.png image. -->
+    <!-- IMPACT: Displayed in the browser tab, bookmarks, and history. type="image/png" specifies the format. -->
+    <!-- ALTERNATIVE: Use an .ico file for maximum browser compatibility, or an SVG for resolution independence. -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+
+    <!-- PURPOSE: Configures the viewport for responsive design on mobile devices. -->
+    <!-- IMPACT: width=device-width makes the page width match the device screen width (no horizontal scroll). -->
+    <!--         initial-scale=1.0 sets the initial zoom level to 100% (no zoom on load). -->
+    <!--         Without this, mobile browsers render the page at desktop width (tiny and unreadable). -->
+    <!-- ALTERNATIVE: Add maximum-scale=1.0, user-scalable=no to prevent pinch-to-zoom (not recommended for accessibility). -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GrandMaster - Multiplayer Real-Time Chess</title>
-    <meta name="description" content="Play Chess online with friends in real-time. Experience the most beautiful and fluid multiplayer chess game on the web." />
-    <meta name="keywords" content="chess, multiplayer, online game, real-time chess, strategy" />
+
+    <!-- PURPOSE: Sets the browser tab title. -->
+    <!-- IMPACT: Displayed in the browser tab, search engine results, and bookmark names. -->
+    <!--         SEO: Title tags are the #1 on-page SEO factor — should be descriptive and under 60 characters. -->
+    <!-- ALTERNATIVE: Dynamic title per page using react-helmet-async (already included in the project). -->
+    <title>GrandMaster - The Elite Chess Platform</title>
+
+    <!-- PURPOSE: Meta description for search engines. -->
+    <!-- IMPACT: Displayed as the snippet text under the title in Google/Bing search results. -->
+    <!--         Should be 150-160 characters, compelling, and include target keywords. -->
+    <!-- ALTERNATIVE: Set dynamically per page with react-helmet-async for page-specific descriptions. -->
+    <meta name="description" content="Experience professional multiplayer chess with grandmaster-level analytics, custom tournaments, and a sleek modern interface." />
+
+    <!-- PURPOSE: Keywords meta tag for SEO. -->
+    <!-- IMPACT: MINIMAL SEO impact — Google ignores this tag since ~2009 due to keyword stuffing abuse. -->
+    <!--         Some smaller search engines (Bing, Yandex) may still consider it. -->
+    <!-- ALTERNATIVE: Remove this tag — focus on content quality and backlinks instead. -->
+    <meta name="keywords" content="chess, multiplayer chess, grandmaster, chess online, board game" />
+
+    <!-- PURPOSE: Open Graph title for social media sharing (Facebook, LinkedIn, Discord, etc.). -->
+    <!-- IMPACT: When someone shares a link to this site, social platforms display this as the title. -->
+    <!-- ALTERNATIVE: Add og:description, og:url, og:type for richer social previews. -->
+    <meta property="og:title" content="GrandMaster Chess" />
+
+    <!-- PURPOSE: Open Graph image for social media sharing. -->
+    <!-- IMPACT: The logo.png is displayed as the preview image when the link is shared on social media. -->
+    <!-- ALTERNATIVE: Use a larger, more descriptive image (1200x630px recommended for Facebook/LinkedIn). -->
+    <meta property="og:image" content="/logo.png" />
   </head>
+
   <body>
+    <!-- PURPOSE: The root container where React renders the entire application. -->
+    <!-- IMPACT: ReactDOM.createRoot(document.getElementById('root')) mounts the App component here. -->
+    <!--         Everything visible on the page is rendered INSIDE this div by React. -->
+    <!--         The div starts empty — React fills it with the UI after JavaScript loads and executes. -->
+    <!-- ALTERNATIVE: Use <div id="app"></div> — any ID works, "root" is the React convention. -->
     <div id="root"></div>
+
+    <!-- PURPOSE: Loads the main React application JavaScript via Vite's module system. -->
+    <!-- IMPACT: type="module" enables ES module syntax (import/export) in the browser. -->
+    <!--         Vite intercepts this in dev mode for hot module replacement (HMR). -->
+    <!--         In production, Vite replaces this with the bundled/optimized JS file. -->
+    <!-- ALTERNATIVE: type="text/javascript" (legacy mode — no import/export, requires bundling first). -->
     <script type="module" src="./src/main.jsx"></script>
   </body>
 </html>
