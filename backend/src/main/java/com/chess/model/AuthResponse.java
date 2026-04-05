@@ -28,6 +28,11 @@ import lombok.NoArgsConstructor;
 public class AuthResponse { // The JSON response sent to the frontend after login/signup.
                             // IMPACT: Frontend parses this to populate the user state and localStorage.
 
+    // PURPOSE: The authenticated user's database ID.
+    // IMPACT: Allows the frontend to make API calls that require the user's ID
+    //         like fetching match history.
+    private Long id;
+
     // PURPOSE: The authenticated user's username.
     // IMPACT: Displayed in the sidebar, chat messages, and user profile section of the frontend.
     // ALTERNATIVE: Include userId as well for API calls that need the numeric ID.

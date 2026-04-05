@@ -134,7 +134,7 @@ public class AuthController { // Handles user registration and login.
         // IMPACT: Frontend receives { username, wins, losses, xp, message } and stores it in localStorage.
         //         This effectively "logs in" the user immediately after signup.
         // ALTERNATIVE: Return 201 Created with a Location header pointing to the new user resource (RESTful convention).
-        return ResponseEntity.ok(new AuthResponse(user.getUsername(), user.getWins(), user.getLosses(), user.getXp(), "Signup successful!"));
+        return ResponseEntity.ok(new AuthResponse(user.getId(), user.getUsername(), user.getWins(), user.getLosses(), user.getXp(), "Signup successful!"));
     }
 
     // PURPOSE: Handles HTTP POST requests to /api/auth/login — authenticates an existing user.
@@ -168,7 +168,7 @@ public class AuthController { // Handles user registration and login.
                 //         NOTE: No session token or JWT is returned — the app relies on localStorage state.
                 //         WARNING: This means auth state is client-side only — not secure for production.
                 // ALTERNATIVE: Generate and return a JWT token, which the frontend sends in Authorization headers.
-                return ResponseEntity.ok(new AuthResponse(user.getUsername(), user.getWins(), user.getLosses(), user.getXp(), "Login successful!"));
+                return ResponseEntity.ok(new AuthResponse(user.getId(), user.getUsername(), user.getWins(), user.getLosses(), user.getXp(), "Login successful!"));
             }
         }
 
