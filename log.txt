@@ -1,0 +1,73 @@
+commit dd2adedb2fcb1a8785db8402290acad0ab6a0d6e
+Merge: 91bba34 9beaf1a
+Author: dyannadle <dyannadle05@gmail.com>
+Date:   Sun Apr 5 16:14:52 2026 +0530
+
+    Merge branch 'main' of https://github.com/dyannadle/The-Chess-Game
+
+commit 91bba34b8268e96d8994ab7e8f817ef4d4b33544
+Author: dyannadle <dyannadle05@gmail.com>
+Date:   Sun Apr 5 16:14:50 2026 +0530
+
+    I have investigated the issue and pushed the required fixes.
+    
+    Here is what was broken: The logical bug was a disconnect between the frontend app expecting a User ID but the backend authentication response dropping it. In frontend/src/App.jsx, when fetching the Match History, it was doing a guard check for user.id. Since user came from localStorage populated by the AuthResponse DTO without the id field, the function silently failed and history would never load!
+    
+    Here is how I fixed it:
+    
+    I added id to the AuthResponse JSON DTO in backend/src/main/java/com/chess/model/AuthResponse.java.
+    I updated the signup and login endpoints in AuthController.java to inject user.getId() into the response.
+    Additionally, I noticed the backend backend throws FATAL: password authentication failed for user "postgres" when started up locally using the production properties. To combat this and get the server to boot up, I ran the server using --spring.profiles.active=local which relies on the H2 in-memory local database, bypassing the postgres check and letting the game work.
+    
+    I've documented all of these fixes in the artifact output
+    walkthrough.md
+    . Make sure to log out and log back into your session so it caches the new id parameter locally in your browser. All code has been successfully rebuilt and verified!
+
+commit 9beaf1ab4994a858bae080f4c301ab2a0cad1631
+Merge: 4646f0b 5e47670
+Author: Mr.Deepak Yannadle <104290668+dyannadle@users.noreply.github.com>
+Date:   Sun Apr 5 15:26:22 2026 +0530
+
+    Merge pull request #13 from dyannadle/try
+    
+    Merge pull request #12 from dyannadle/main
+
+commit 5e47670d1f243259876b3493ed49e18059554fa5
+Merge: cddd103 4646f0b
+Author: Mr.Deepak Yannadle <104290668+dyannadle@users.noreply.github.com>
+Date:   Sun Apr 5 15:25:43 2026 +0530
+
+    Merge pull request #12 from dyannadle/main
+    
+    Annoted Code
+
+commit 4646f0b8002f45e557ab5325e19407dedfa75f19
+Author: dyannadle <dyannadle05@gmail.com>
+Date:   Sun Apr 5 15:20:22 2026 +0530
+
+    I have successfully completed the comprehensive, line-by-line annotation of the entire codebase, including both the backend and the frontend.
+    
+    Here is a summary of the fully documented components:
+    
+    Frontend React Application
+    Entry Points & Config:
+    index.html: Annotated SPA structure, SEO metadata, and Vite entry hooks.
+    main.jsx: Annotated React 18 bootstrap and concurrent root initialization.
+    vite.config.js: Annotated Vite build configuration and Tailwind integration.
+    Core Components:
+    App.jsx: Annotated routing, state management, modal handling, and authentication guarding.
+    Auth.jsx: Annotated the login/signup flow, API integration, and controlled forms.
+    ChessBoard.jsx: Extensively annotated the core game loop, timers, AI moves, legal move visualizers, and WebSocket event handling.
+    PuzzleBoard.jsx: Annotated the tactical training system, move validation against the backend solution, and user feedback mechanisms.
+    ReplayBoard.jsx: Annotated the historical match replay engine, move array navigation, and PGN export link.
+    Custom Hooks:
+    useGameSocket.js: Annotated the STOMP and SockJS lifecycle, subscription handling, and move/chat publishing.
+    Backend Spring Boot Service (Completed in the previous phase)
+    Core Configuration: SecurityConfig.java, WebSocketConfig.java, ChessApplication.java, application.properties, application-local.properties, Dockerfile.
+    Controllers: AuthController.java, ChessController.java, MatchController.java, PuzzleController.java.
+    Services: RoomManager.java, GameHistoryService.java, PuzzleService.java.
+    Entities & DTOs: User.java, Match.java, MatchMove.java, Puzzle.java, AuthResponse.java, LoginRequest.java, MoveRequest.java, ChatMessage.java.
+    Repositories: All Spring Data JPA interfaces.
+    Every single one of these files now contains structured comments detailing the // PURPOSE, // IMPACT, and // ALTERNATIVE for each line or logical block.
+    
+    The application is fully documented to an institutional standard. Please let me know if there are any specific files you'd like to adjust, or if you're ready to proceed with testing and deploying the newly optimized backend!
